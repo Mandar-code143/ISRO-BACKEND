@@ -96,10 +96,20 @@ def _fallback_interpolate(
 
 def _load_real_model(model_path: Path, device: str):
     try:
-        from backend.models.rife.RIFE_HDv3 import Model
+        from pathlib import Path
+        from models.rife.RIFE_HDv3 import Model
 
         model = Model()
-        model.load_model("backend/models/rife", rank=-1)
+
+        model_dir = Path(__file__).resolve().parents[2] / "models" / "rife"
+
+        logger.info(f"Loading RIFE model from: {model_dir}")
+
+        model.load_model(
+        str(model_dir),
+        rank=-1
+        )
+
         model.eval()
 
         logger.info("RIFE HD v3 model loaded successfully")

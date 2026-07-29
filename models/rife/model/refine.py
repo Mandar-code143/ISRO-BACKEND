@@ -3,7 +3,7 @@ import torch.nn as nn
 import numpy as np
 import torch.optim as optim
 import itertools
-from backend.models.rife.model.warplayer import warp
+from models.rife.model.warplayer import warp
 import torch.nn.functional as F
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
