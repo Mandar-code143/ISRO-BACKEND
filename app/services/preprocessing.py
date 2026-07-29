@@ -175,14 +175,22 @@ def preprocess_variable(
         logger.info("Frame A and B are identical — applying slight augmentation to B")
         arr_b = arr_b_aug
 
-    # Normalize each frame
+    # Resize FIRST (huge memory saving)
+    logger.info("Resizing frame A...")
+    arr_a = resize_frame(arr_a, (512, 512))
+
+    logger.info("Resizing frame B...")
+    arr_b = resize_frame(arr_b, (512, 512))
+
+    logger.info("Frame A resized")
+    logger.info("Frame B resized")
+
+# Normalize AFTER resizing
     uint8_a, stats_a = normalize_to_uint8(arr_a, method="percentile")
     logger.info("Normalized frame A")
+
     uint8_b, stats_b = normalize_to_uint8(arr_b, method="percentile")
     logger.info("Normalized frame B")
-    # Resize to standard size for model
-    uint8_a = resize_frame(uint8_a, (512, 512))
-    uint8_b = resize_frame(uint8_b, (512, 512))
 
     # Save
     output_dir.mkdir(parents=True, exist_ok=True)
