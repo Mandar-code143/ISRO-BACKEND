@@ -28,17 +28,17 @@ def extract_2d_slice(
     arr = np.squeeze(arr)
 
     if arr.ndim == 2:
-        return arr.astype(np.float64)
+        return arr.astype(np.float32)
 
     if arr.ndim == 3:
         # Assume first dim is time or channel; select time_index
         idx = min(time_index, arr.shape[0] - 1)
-        return arr[idx].astype(np.float64)
+        return arr[idx].astype(np.float32)
 
     if arr.ndim == 4:
         # Assume (time, channel, y, x) or similar; take first channel
         idx = min(time_index, arr.shape[0] - 1)
-        return arr[idx, 0].astype(np.float64)
+        return arr[idx, 0].astype(np.float32)
 
     raise ValueError(
         f"Variable '{variable_name}' has {arr.ndim} dimensions after squeeze — "
@@ -62,7 +62,7 @@ def normalize_to_uint8(
     Returns (uint8_array, stats_dict).
     """
     # Replace NaN/Inf with NaN so we can ignore them
-    arr = arr.astype(np.float64)
+    arr = arr.astype(np.float32)
     arr[~np.isfinite(arr)] = np.nan
 
     finite = arr[~np.isnan(arr)]
@@ -162,7 +162,10 @@ def preprocess_variable(
     logger.info(f"Extracting frames at indices {idx_a} and {idx_b} from '{variable_name}'")
 
     arr_a = extract_2d_slice(ds, variable_name, time_index=idx_a)
+    logger.info(f"arr_a shape: {arr_a.shape}, dtype: {arr_a.dtype}")
+
     arr_b = extract_2d_slice(ds, variable_name, time_index=idx_b)
+    logger.info(f"arr_b shape: {arr_b.shape}, dtype: {arr_b.dtype}")
 
     # If same frame, create synthetic B by slight Gaussian blur + contrast shift
     if idx_a == idx_b or np.allclose(arr_a, arr_b, equal_nan=True):
@@ -174,8 +177,9 @@ def preprocess_variable(
 
     # Normalize each frame
     uint8_a, stats_a = normalize_to_uint8(arr_a, method="percentile")
+    logger.info("Normalized frame A")
     uint8_b, stats_b = normalize_to_uint8(arr_b, method="percentile")
-
+    logger.info("Normalized frame B")
     # Resize to standard size for model
     uint8_a = resize_frame(uint8_a, (512, 512))
     uint8_b = resize_frame(uint8_b, (512, 512))
