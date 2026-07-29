@@ -91,6 +91,11 @@ async def interpolate_frames(
                 )
             finally:
                 ds.close()
+                
+                logger.info("========== PREPROCESSING FINISHED ==========")
+                logger.info(f"Frame A path: {path_a}")
+                logger.info(f"Frame B path: {path_b}")
+                logger.info("About to call run_interpolation()")
 
         # Run interpolation
         logger.info("=== Preprocessing finished ===")
@@ -98,7 +103,9 @@ async def interpolate_frames(
         logger.info(f"Frame B: {path_b}")
         logger.info("=== Starting interpolation ===")
         logger.info("=== Interpolation finished ===")
+        logger.info("Calling run_interpolation()...")
         interpolated_arr, is_fallback, interp_mode = model_adapter.run_interpolation(path_a, path_b)
+        logger.info("run_interpolation() returned successfully")
 
         from PIL import Image
         interp_path = output_dir / "interpolated.png"
