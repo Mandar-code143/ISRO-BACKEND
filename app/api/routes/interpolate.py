@@ -7,7 +7,7 @@ import uuid
 import logging
 import aiofiles
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request
 from typing import Optional
 
 from app.core.config import UPLOADS_DIR, OUTPUTS_DIR, MAX_UPLOAD_BYTES, ALLOWED_EXTENSIONS
@@ -19,8 +19,10 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+
 @router.post("/interpolate", response_model=JobResult)
 async def interpolate_frames(
+    request: Request,
     file: Optional[UploadFile] = File(None),
     selectedVariable: Optional[str] = Form(None),
     frameA: Optional[str] = Form("0"),
@@ -109,7 +111,7 @@ async def interpolate_frames(
             dataset_notes=["Demo synthetic data" if is_demo else "Real NetCDF data"],
         )
 
-        base_url = f"http://127.0.0.1:8000/api/outputs/{job_id}"
+        base_url = str(request.base_url).rstrip("/") + f"/api/outputs/{job_id}"
         return JobResult(
             jobId=job_id,
             status="completed",
