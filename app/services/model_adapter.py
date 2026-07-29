@@ -180,18 +180,26 @@ def run_interpolation(
     Returns: (interpolated_frame_uint8, is_fallback, mode_label)
     """
     import cv2
-    from app.core.config import MODEL_PATH, MODEL_FALLBACK_PATH
+    from app.core.config import MODEL_PATH,MODEL_FALLBACK_PATH  
+    logger.info("========== ENTERED run_interpolation() ==========")
+    
+    logger.info("Loading source images...")
 
-    # Load source frames
     a = cv2.imread(str(frame_a_path), cv2.IMREAD_COLOR)
     b = cv2.imread(str(frame_b_path), cv2.IMREAD_COLOR)
 
+    logger.info("Images loaded successfully")
+
     if a is None or b is None:
         raise ValueError("Could not load source frames for interpolation")
-
+    logger.info(f"Frame A shape: {a.shape}")
+    logger.info(f"Frame B shape: {b.shape}")
+    logger.info("Detecting device...")
     device = _detect_device()
     status = get_model_status()
+    logger.info(f"Model status: {status}")
 
+    logger.info("Checking fallback mode...")
     if status["fallbackMode"]:
         logger.info("Running fallback blend interpolation (no model weights found)")
         result = _fallback_interpolate(a, b)
@@ -199,7 +207,9 @@ def run_interpolation(
 
     # Try to load and run real model
     model_path = Path(status["modelPath"])
+    logger.info("Loading RIFE model...")
     model = _load_real_model(model_path, device)
+    logger.info("Finished loading model")
 
     if model is None:
         logger.warning("Model load failed — falling back to blend")
@@ -207,7 +217,10 @@ def run_interpolation(
         return result, True, "fallback-blend"
 
     try:
+        logger.info("Starting RIFE inference...")
         result = _run_real_inference(model, a, b, device)
+        logger.info("RIFE inference completed")
+        logger.info("Returning interpolation result")
         return result, False, "rife-inference"
     except Exception as e:
         logger.error(f"Inference error: {e} — falling back")

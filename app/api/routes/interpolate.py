@@ -93,6 +93,11 @@ async def interpolate_frames(
                 ds.close()
 
         # Run interpolation
+        logger.info("=== Preprocessing finished ===")
+        logger.info(f"Frame A: {path_a}")
+        logger.info(f"Frame B: {path_b}")
+        logger.info("=== Starting interpolation ===")
+        logger.info("=== Interpolation finished ===")
         interpolated_arr, is_fallback, interp_mode = model_adapter.run_interpolation(path_a, path_b)
 
         from PIL import Image
